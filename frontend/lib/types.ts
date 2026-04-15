@@ -42,4 +42,8 @@ export interface Session {
   startDate: string;
   currentDate: string | null;
   createdAt: number;
+  // Optional override: when set, static-mode fetches this snapshot directly
+  // instead of inferring a key from universe+benchmark. Lets preset launchers
+  // point at arbitrary pre-baked JSON files.
+  snapshotKey?: string;
 }

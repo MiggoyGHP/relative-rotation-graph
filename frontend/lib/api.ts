@@ -73,8 +73,9 @@ export function fetchRRGRange(opts: {
   n?: number;
   start?: string;
   end?: string | null;
+  snapshotKey?: string;
 }): Promise<RRGResponse> {
-  if (STATIC_MODE) return getStatic<RRGResponse>(snapshotKeyFor(opts.universe, opts.benchmark));
+  if (STATIC_MODE) return getStatic<RRGResponse>(opts.snapshotKey ?? snapshotKeyFor(opts.universe, opts.benchmark));
   const params: Record<string, string | number> = {
     universe: opts.universe.join(","),
     benchmark: opts.benchmark,

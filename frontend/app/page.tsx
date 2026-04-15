@@ -16,6 +16,14 @@ export default function HomePage() {
   const [wlBenchmark, setWlBenchmark] = useState("SPY");
   const [wlTitle, setWlTitle] = useState("Custom watchlist");
 
+  // Hand-curated macro rotation watchlist (USOIL/XAUUSD normalized to USO/GLD,
+  // SPY removed since it's the benchmark). Baked into the static snapshot.
+  const MACRO_UNIVERSE = [
+    "USO","EWY","XOP","XLE","SMH","COPX","URA","XLB","PBJ","GLD",
+    "XLI","XBI","EEM","EWH","XLU","XME","XLRE","TAN","XLP","XLK",
+    "XLC","XRT","VNM","KIE","XLV","XLF","UNG","KWEB",
+  ];
+
   useEffect(() => {
     fetchSectors()
       .then(setSectors)
@@ -32,6 +40,20 @@ export default function HomePage() {
       tail: 8,
       startDate: "2016-01-01",
       currentDate: null,
+    });
+    router.push(`/session?id=${id}`);
+  }
+
+  function launchMacro() {
+    const id = createSession({
+      title: "Macro rotation",
+      universe: MACRO_UNIVERSE,
+      benchmark: "SPY",
+      n: 14,
+      tail: 8,
+      startDate: "2016-01-01",
+      currentDate: null,
+      snapshotKey: "preset-macro",
     });
     router.push(`/session?id=${id}`);
   }
@@ -66,6 +88,24 @@ export default function HomePage() {
           {sectors ? "Launch Sectors session" : "Loading sectors…"}
         </button>
         {error && <div className="mt-3 text-red-400 text-sm">{error}</div>}
+      </section>
+
+      <section className="bg-gray-900/60 border border-gray-800 rounded-lg p-6">
+        <h2 className="text-lg font-semibold mb-2">Preset: Macro rotation watchlist vs SPY</h2>
+        <p className="text-gray-400 text-sm mb-4">
+          28 macro/thematic ETFs spanning energy (USO, XOP, XLE, XME, COPX, URA, UNG),
+          metals (GLD), regions (EWY, EEM, EWH, VNM, KWEB), US sectors (XLK, XLF, XLV, XLI, …),
+          and themes (SMH, XBI, TAN, KIE, PBJ, XRT) vs SPY.
+        </p>
+        <div className="bg-gray-950 border border-gray-800 rounded p-2 mb-4 text-gray-400 font-mono text-xs leading-relaxed">
+          {MACRO_UNIVERSE.join(", ")}
+        </div>
+        <button
+          onClick={launchMacro}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-medium"
+        >
+          Launch Macro rotation session
+        </button>
       </section>
 
       <section className="bg-gray-900/60 border border-gray-800 rounded-lg p-6 space-y-4">

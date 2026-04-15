@@ -39,6 +39,7 @@ function SessionPageInner() {
       benchmark: session.benchmark,
       n: session.n,
       start: session.startDate,
+      snapshotKey: session.snapshotKey,
     })
       .then((resp) => {
         setData(resp);

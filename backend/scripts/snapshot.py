@@ -24,6 +24,17 @@ from app.routes.sectors import SECTORS_PATH  # noqa: E402
 
 OUT_DIR = Path(__file__).resolve().parents[2] / "frontend" / "public" / "snapshot"
 
+# Keep in sync with frontend/app/page.tsx MACRO_UNIVERSE.
+MACRO_PRESET = {
+    "id": "preset-macro",
+    "benchmark": "SPY",
+    "universe": [
+        "USO", "EWY", "XOP", "XLE", "SMH", "COPX", "URA", "XLB", "PBJ", "GLD",
+        "XLI", "XBI", "EEM", "EWH", "XLU", "XME", "XLRE", "TAN", "XLP", "XLK",
+        "XLC", "XRT", "VNM", "KIE", "XLV", "XLF", "UNG", "KWEB",
+    ],
+}
+
 
 def write_json(name: str, payload: dict) -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -69,6 +80,21 @@ def main() -> None:
             write_json(f"drill-{etf}", resp)
         except Exception as e:
             print(f"[snapshot]   {etf} failed: {e}")
+
+    # Macro rotation preset.
+    print(f"[snapshot] computing {MACRO_PRESET['id']} ({len(MACRO_PRESET['universe'])} tickers vs {MACRO_PRESET['benchmark']})...")
+    try:
+        resp = _compute_series_for(
+            tickers=MACRO_PRESET["universe"],
+            benchmark=MACRO_PRESET["benchmark"],
+            n=14,
+            start="2016-01-01",
+            end=None,
+            tail=None,
+        )
+        write_json(MACRO_PRESET["id"], resp)
+    except Exception as e:
+        print(f"[snapshot]   {MACRO_PRESET['id']} failed: {e}")
 
     print("[snapshot] done")
 
