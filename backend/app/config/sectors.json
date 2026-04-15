@@ -1,0 +1,49 @@
+{
+  "benchmark": "SPY",
+  "sectors": {
+    "XLK": {
+      "name": "Technology",
+      "components": ["AAPL", "MSFT", "NVDA", "AVGO", "CRM", "ORCL", "ADBE", "AMD", "QCOM", "CSCO"]
+    },
+    "XLC": {
+      "name": "Communication Services",
+      "components": ["META", "GOOGL", "GOOG", "NFLX", "DIS", "TMUS", "VZ", "T", "CMCSA", "EA"]
+    },
+    "XLY": {
+      "name": "Consumer Discretionary",
+      "components": ["AMZN", "TSLA", "HD", "MCD", "LOW", "BKNG", "TJX", "SBUX", "NKE", "CMG"]
+    },
+    "XLP": {
+      "name": "Consumer Staples",
+      "components": ["COST", "WMT", "PG", "KO", "PEP", "PM", "MO", "MDLZ", "CL", "TGT"]
+    },
+    "XLE": {
+      "name": "Energy",
+      "components": ["XOM", "CVX", "COP", "EOG", "SLB", "PSX", "MPC", "WMB", "OKE", "KMI"]
+    },
+    "XLF": {
+      "name": "Financials",
+      "components": ["BRK-B", "JPM", "V", "MA", "BAC", "WFC", "GS", "MS", "AXP", "BLK"]
+    },
+    "XLV": {
+      "name": "Health Care",
+      "components": ["LLY", "UNH", "JNJ", "ABBV", "MRK", "TMO", "ABT", "PFE", "DHR", "AMGN"]
+    },
+    "XLI": {
+      "name": "Industrials",
+      "components": ["GE", "CAT", "RTX", "HON", "UNP", "BA", "ETN", "DE", "UPS", "LMT"]
+    },
+    "XLB": {
+      "name": "Materials",
+      "components": ["LIN", "SHW", "APD", "ECL", "FCX", "NEM", "DOW", "DD", "CTVA", "NUE"]
+    },
+    "XLRE": {
+      "name": "Real Estate",
+      "components": ["PLD", "AMT", "EQIX", "WELL", "SPG", "PSA", "O", "DLR", "CCI", "CBRE"]
+    },
+    "XLU": {
+      "name": "Utilities",
+      "components": ["NEE", "SO", "DUK", "CEG", "AEP", "SRE", "D", "PCG", "EXC", "XEL"]
+    }
+  }
+}
