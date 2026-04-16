@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { interpolateRdYlGn } from "d3-scale-chromatic";
 import { RRGSeries } from "@/lib/types";
 
-// Plotly is client-only.
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 interface Props {
@@ -21,7 +20,10 @@ const NEUTRAL = "#6b7280";
 const CATEGORICAL = [
   "#2563eb", "#dc2626", "#16a34a", "#ea580c", "#9333ea",
   "#0891b2", "#db2777", "#65a30d", "#7c3aed", "#f59e0b",
-  "#0d9488",
+  "#0d9488", "#4f46e5", "#059669", "#d97706", "#be185d",
+  "#0284c7", "#7c2d12", "#166534", "#6d28d9", "#b45309",
+  "#155e75", "#9d174d", "#3f6212", "#5b21b6", "#92400e",
+  "#0e7490", "#831843", "#4d7c0f", "#4c1d95",
 ];
 
 function mapRange(v: number | null | undefined, inLo: number, inHi: number, outLo: number, outHi: number): number {
@@ -32,8 +34,13 @@ function mapRange(v: number | null | undefined, inLo: number, inHi: number, outL
 
 function colorFor(fund: number | null | undefined): string {
   if (fund == null || !Number.isFinite(fund)) return NEUTRAL;
-  const t = (fund + 100) / 200; // -100..100 → 0..1
+  const t = (fund + 100) / 200;
   return interpolateRdYlGn(Math.max(0, Math.min(1, t)));
+}
+
+function mean(nums: number[]): number {
+  if (!nums.length) return 1;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
 export default function RRGChart({
@@ -47,7 +54,6 @@ export default function RRGChart({
 }: Props) {
   const { traces, range } = useMemo(() => {
     const traces: any[] = [];
-
     let minX = 100, maxX = 100, minY = 100, maxY = 100;
 
     series.forEach((s, sIdx) => {
@@ -55,56 +61,61 @@ export default function RRGChart({
       if (pts.length === 0) return;
 
       const tickerColor = CATEGORICAL[sIdx % CATEGORICAL.length];
+      const head = pts[pts.length - 1];
 
-      // Per-segment tail traces — one short line per consecutive pair.
-      for (let i = 1; i < pts.length; i++) {
-        const a = pts[i - 1];
-        const b = pts[i];
-        const rvolMid = ((a.rvol ?? 1) + (b.rvol ?? 1)) / 2;
-        const width = showRvolWidth ? mapRange(rvolMid, 0.5, 3.0, 1.5, 9) : 2;
-        const opacity = showRvolWidth ? mapRange(rvolMid, 0.5, 3.0, 0.35, 1) : 0.85;
-        const color = showFundamentalColor ? colorFor(b.fund_score) : tickerColor;
-
-        traces.push({
-          x: [a.rs_ratio, b.rs_ratio],
-          y: [a.rs_momentum, b.rs_momentum],
-          type: "scatter",
-          mode: "lines",
-          line: { width, color },
-          opacity,
-          hoverinfo: "skip",
-          showlegend: false,
-          legendgroup: s.ticker,
-        });
-
-        minX = Math.min(minX, a.rs_ratio!, b.rs_ratio!);
-        maxX = Math.max(maxX, a.rs_ratio!, b.rs_ratio!);
-        minY = Math.min(minY, a.rs_momentum!, b.rs_momentum!);
-        maxY = Math.max(maxY, a.rs_momentum!, b.rs_momentum!);
+      // Track data extent.
+      for (const p of pts) {
+        minX = Math.min(minX, p.rs_ratio!);
+        maxX = Math.max(maxX, p.rs_ratio!);
+        minY = Math.min(minY, p.rs_momentum!);
+        maxY = Math.max(maxY, p.rs_momentum!);
       }
 
-      // Head marker — labeled, legend-visible entry.
-      const head = pts[pts.length - 1];
-      const headFundColor = showFundamentalColor ? colorFor(head.fund_score) : tickerColor;
-      const headSize = showRvolWidth ? mapRange(head.rvol, 0.5, 3.0, 11, 22) : 14;
+      // Build per-point arrays for markers.
+      const xs = pts.map((p) => p.rs_ratio);
+      const ys = pts.map((p) => p.rs_momentum);
 
+      const markerSizes = pts.map((p, i) => {
+        const isHead = i === pts.length - 1;
+        if (!showRvolWidth) return isHead ? 14 : 6;
+        const base = isHead
+          ? mapRange(p.rvol, 0.5, 3.0, 14, 24)
+          : mapRange(p.rvol, 0.5, 3.0, 4, 12);
+        return base;
+      });
+
+      const markerColors = pts.map((p) =>
+        showFundamentalColor ? colorFor(p.fund_score) : tickerColor
+      );
+
+      // Line styling: spline-smoothed, width from mean RVOL.
+      const avgRvol = mean(pts.map((p) => p.rvol ?? 1));
+      const lineWidth = showRvolWidth ? mapRange(avgRvol, 0.5, 3.0, 1.5, 6) : 2;
+      const lineColor = showFundamentalColor ? colorFor(head.fund_score) : tickerColor;
+      const lineOpacity = showRvolWidth ? mapRange(avgRvol, 0.5, 3.0, 0.4, 0.95) : 0.85;
+
+      // Tail spline trace: smooth line + dots at every weekly point.
       traces.push({
-        x: [head.rs_ratio],
-        y: [head.rs_momentum],
+        x: xs,
+        y: ys,
         type: "scatter",
-        mode: showLabels ? "markers+text" : "markers",
-        marker: {
-          size: headSize,
-          color: headFundColor,
-          line: { color: "#111827", width: 1.5 },
+        mode: "lines+markers",
+        line: {
+          shape: "spline",
+          smoothing: 1.0,
+          width: lineWidth,
+          color: lineColor,
         },
-        text: showLabels ? [s.ticker] : undefined,
-        textposition: "top center",
-        textfont: { color: "#f3f4f6", size: 12, family: "Inter, sans-serif" },
+        opacity: lineOpacity,
+        marker: {
+          size: markerSizes,
+          color: markerColors,
+          line: { color: "#111827", width: 1 },
+        },
         name: s.ticker,
         legendgroup: s.ticker,
         showlegend: true,
-        customdata: [[s.ticker, head.quadrant, head.date, head.rvol, head.fund_score]],
+        customdata: pts.map((p) => [s.ticker, p.quadrant, p.date, p.rvol, p.fund_score]),
         hovertemplate:
           "<b>%{customdata[0]}</b><br>" +
           "RS-Ratio: %{x:.2f}<br>" +
@@ -114,9 +125,25 @@ export default function RRGChart({
           "RVOL: %{customdata[3]}<br>" +
           "Fund score: %{customdata[4]}<extra></extra>",
       });
+
+      // Head label trace: text annotation at the head point. Separate so the
+      // label doesn't collide with the marker styling above.
+      if (showLabels) {
+        traces.push({
+          x: [head.rs_ratio],
+          y: [head.rs_momentum],
+          type: "scatter",
+          mode: "text",
+          text: [s.ticker],
+          textposition: "top center",
+          textfont: { color: "#f3f4f6", size: 12, family: "Inter, sans-serif" },
+          legendgroup: s.ticker,
+          showlegend: false,
+          hoverinfo: "skip",
+        });
+      }
     });
 
-    // Symmetric square padded by 1.5 around 100 based on data extent.
     const pad = Math.max(1.5, Math.max(maxX - 100, 100 - minX, maxY - 100, 100 - minY) + 0.5);
     const range = {
       x: [100 - pad, 100 + pad] as [number, number],
@@ -130,7 +157,6 @@ export default function RRGChart({
     () => [
       { type: "line", x0: 100, x1: 100, y0: range.y[0], y1: range.y[1], line: { color: "#4b5563", width: 1, dash: "dot" } },
       { type: "line", x0: range.x[0], x1: range.x[1], y0: 100, y1: 100, line: { color: "#4b5563", width: 1, dash: "dot" } },
-      // Quadrant background tints
       { type: "rect", xref: "x", yref: "y", x0: 100, y0: 100, x1: range.x[1], y1: range.y[1], fillcolor: "rgba(22,163,74,0.08)", line: { width: 0 }, layer: "below" },
       { type: "rect", xref: "x", yref: "y", x0: 100, y0: range.y[0], x1: range.x[1], y1: 100, fillcolor: "rgba(234,179,8,0.08)", line: { width: 0 }, layer: "below" },
       { type: "rect", xref: "x", yref: "y", x0: range.x[0], y0: range.y[0], x1: 100, y1: 100, fillcolor: "rgba(220,38,38,0.08)", line: { width: 0 }, layer: "below" },
