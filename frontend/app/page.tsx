@@ -9,6 +9,9 @@ import { SectorsResponse } from "@/lib/types";
 export default function HomePage() {
   const router = useRouter();
   const createSession = useSessionStore((s) => s.createSession);
+  const updateSession = useSessionStore((s) => s.updateSession);
+  const setActive = useSessionStore((s) => s.setActive);
+  const sessions = useSessionStore((s) => s.sessions);
   const [sectors, setSectors] = useState<SectorsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +48,13 @@ export default function HomePage() {
   }
 
   function launchMacro() {
+    const existing = sessions.find((s) => s.snapshotKey === "preset-macro");
+    if (existing) {
+      updateSession(existing.id, { universe: MACRO_UNIVERSE, benchmark: "SPY" });
+      setActive(existing.id);
+      router.push(`/session?id=${existing.id}`);
+      return;
+    }
     const id = createSession({
       title: "Macro rotation",
       universe: MACRO_UNIVERSE,
