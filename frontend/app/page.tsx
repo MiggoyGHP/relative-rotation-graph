@@ -21,7 +21,7 @@ export default function HomePage() {
   const MACRO_UNIVERSE = [
     "USO","EWY","XOP","XLE","SMH","COPX","URA","XLB","PBJ","GLD",
     "XLI","XBI","EEM","EWH","XLU","XME","XLRE","TAN","XLP","XLK",
-    "XLC","XRT","VNM","KIE","XLV","XLF","UNG","KWEB",
+    "XLC","XRT","VNM","KIE","XLV","XLF","UNG","KWEB","IBIT","ETHA",
   ];
 
   useEffect(() => {
@@ -93,9 +93,9 @@ export default function HomePage() {
       <section className="bg-gray-900/60 border border-gray-800 rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-2">Preset: Macro rotation watchlist vs SPY</h2>
         <p className="text-gray-400 text-sm mb-4">
-          28 macro/thematic ETFs spanning energy (USO, XOP, XLE, XME, COPX, URA, UNG),
-          metals (GLD), regions (EWY, EEM, EWH, VNM, KWEB), US sectors (XLK, XLF, XLV, XLI, …),
-          and themes (SMH, XBI, TAN, KIE, PBJ, XRT) vs SPY.
+          30 macro/thematic ETFs spanning energy (USO, XOP, XLE, XME, COPX, URA, UNG),
+          metals (GLD), crypto (IBIT, ETHA), regions (EWY, EEM, EWH, VNM, KWEB),
+          US sectors (XLK, XLF, XLV, XLI, …), and themes (SMH, XBI, TAN, KIE, PBJ, XRT) vs SPY.
         </p>
         <div className="bg-gray-950 border border-gray-800 rounded p-2 mb-4 text-gray-400 font-mono text-xs leading-relaxed">
           {MACRO_UNIVERSE.join(", ")}
