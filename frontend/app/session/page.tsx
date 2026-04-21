@@ -1,6 +1,6 @@
 "use client";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { fetchRRGRange, fetchSectors } from "@/lib/api";
 import { useSessionStore } from "@/lib/sessionStore";
 import { RRGResponse, RRGSeries, SectorsResponse } from "@/lib/types";
@@ -8,14 +8,21 @@ import RRGChart from "@/components/RRGChart";
 import TailControls from "@/components/TailControls";
 import DateSlider from "@/components/DateSlider";
 
-function SessionPageInner() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id") ?? "";
+// Query-string routing (/session?id=X) is unreliable in static export +
+// trailingSlash builds — GitHub Pages drops the query on some navigations.
+// The store already tracks activeId, so use that as the session pointer.
+export default function SessionPage() {
   const router = useRouter();
 
+  const id = useSessionStore((s) => s.activeId) ?? "";
   const session = useSessionStore((s) => s.sessions.find((x) => x.id === id));
   const updateSession = useSessionStore((s) => s.updateSession);
   const createSession = useSessionStore((s) => s.createSession);
+
+  // Guard against showing "Session not found" before Zustand rehydrates
+  // localStorage on the client.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   const [data, setData] = useState<RRGResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -76,7 +83,7 @@ function SessionPageInner() {
     if (!sectors) return;
     const sec = sectors.sectors[ticker];
     if (!sec) return;
-    const newId = createSession({
+    createSession({
       title: `${ticker} Components`,
       universe: sec.components,
       benchmark: ticker,
@@ -85,7 +92,11 @@ function SessionPageInner() {
       startDate: session?.startDate ?? "2016-01-01",
       currentDate: null,
     });
-    router.push(`/session?id=${newId}`);
+    router.push(`/session`);
+  }
+
+  if (!hydrated) {
+    return <div className="max-w-4xl mx-auto text-center text-gray-400 py-20">Loading session…</div>;
   }
 
   if (!session) {
@@ -151,13 +162,5 @@ function SessionPageInner() {
         <span>Tail width = RVOL · Color = EPS+Rev acceleration (Red→Green) · Gray = ETF or missing</span>
       </div>
     </div>
-  );
-}
-
-export default function SessionPage() {
-  return (
-    <Suspense fallback={<div className="text-gray-400">Loading…</div>}>
-      <SessionPageInner />
-    </Suspense>
   );
 }
