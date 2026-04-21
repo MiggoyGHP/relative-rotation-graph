@@ -35,7 +35,7 @@ export default function HomePage() {
 
   function launchSectors() {
     if (!sectors) return;
-    const id = createSession({
+    createSession({
       title: "Sectors vs SPY",
       universe: Object.keys(sectors.sectors),
       benchmark: sectors.benchmark,
@@ -44,7 +44,7 @@ export default function HomePage() {
       startDate: "2016-01-01",
       currentDate: null,
     });
-    router.push(`/session?id=${id}`);
+    router.push(`/session`);
   }
 
   function launchMacro() {
@@ -52,10 +52,10 @@ export default function HomePage() {
     if (existing) {
       updateSession(existing.id, { universe: MACRO_UNIVERSE, benchmark: "SPY" });
       setActive(existing.id);
-      router.push(`/session?id=${existing.id}`);
+      router.push(`/session`);
       return;
     }
-    const id = createSession({
+    createSession({
       title: "Macro rotation",
       universe: MACRO_UNIVERSE,
       benchmark: "SPY",
@@ -65,12 +65,12 @@ export default function HomePage() {
       currentDate: null,
       snapshotKey: "preset-macro",
     });
-    router.push(`/session?id=${id}`);
+    router.push(`/session`);
   }
 
   function launchWatchlist() {
     if (wlTickers.length === 0) return;
-    const id = createSession({
+    createSession({
       title: wlTitle || "Custom watchlist",
       universe: wlTickers,
       benchmark: wlBenchmark.toUpperCase().trim() || "SPY",
@@ -79,7 +79,7 @@ export default function HomePage() {
       startDate: "2016-01-01",
       currentDate: null,
     });
-    router.push(`/session?id=${id}`);
+    router.push(`/session`);
   }
 
   return (

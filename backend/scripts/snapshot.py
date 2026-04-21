@@ -31,7 +31,7 @@ MACRO_PRESET = {
     "universe": [
         "USO", "EWY", "XOP", "XLE", "SMH", "COPX", "URA", "XLB", "PBJ", "GLD",
         "XLI", "XBI", "EEM", "EWH", "XLU", "XME", "XLRE", "TAN", "XLP", "XLK",
-        "XLC", "XRT", "VNM", "KIE", "XLV", "XLF", "UNG", "KWEB",
+        "XLC", "XRT", "VNM", "KIE", "XLV", "XLF", "UNG", "KWEB", "IBIT", "ETHA",
     ],
 }
 
